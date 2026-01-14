@@ -1,105 +1,55 @@
-# Copyright (c) 2025 Nand Yaduwanshi <NoxxOP>
-# Location: Supaul, Bihar
-#
-# All rights reserved.
-#
-# This code is the intellectual property of Nand Yaduwanshi.
-# You are not allowed to copy, modify, redistribute, or use this
-# code for commercial or personal projects without explicit permission.
-#
-# Allowed:
-# - Forking for personal learning
-# - Submitting improvements via pull requests
-#
-# Not Allowed:
-# - Claiming this code as your own
-# - Re-uploading without credit or permission
-# - Selling or using commercially
-#
-# Contact for permissions:
-# Email: badboy809075@gmail.com
-
-
-import asyncio
-import shlex
-from typing import Tuple
-
+import os
 from git import Repo
 from git.exc import GitCommandError, InvalidGitRepositoryError
 
+from ShrutiMusic.logging import LOGGER
 import config
 
-from ..logging import LOGGER
-
-
-def install_req(cmd: str) -> Tuple[str, str, int, int]:
-    async def install_requirements():
-        args = shlex.split(cmd)
-        process = await asyncio.create_subprocess_exec(
-            *args,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        stdout, stderr = await process.communicate()
-        return (
-            stdout.decode("utf-8", "replace").strip(),
-            stderr.decode("utf-8", "replace").strip(),
-            process.returncode,
-            process.pid,
-        )
-
-    return asyncio.get_event_loop().run_until_complete(install_requirements())
+log = LOGGER(__name__)
 
 
 def git():
-    REPO_LINK = config.UPSTREAM_REPO
-    if config.GIT_TOKEN:
-        GIT_USERNAME = REPO_LINK.split("com/")[1].split("/")[0]
-        TEMP_REPO = REPO_LINK.split("https://")[1]
-        UPSTREAM_REPO = f"https://{GIT_USERNAME}:{config.GIT_TOKEN}@{TEMP_REPO}"
-    else:
-        UPSTREAM_REPO = config.UPSTREAM_REPO
+    # ✅ Skip if upstream disabled
+    UPSTREAM_REPO = os.getenv("UPSTREAM_REPO")
+    if not UPSTREAM_REPO or str(UPSTREAM_REPO).lower() in ["false", "none", "0"]:
+        log.info("Git updater disabled. Skipping git checks.")
+        return
+
+    # ✅ Skip if not a git repository (Heroku container case)
+    if not os.path.isdir(".git"):
+        log.warning("No .git directory found. Skipping git update.")
+        return
+
     try:
-        repo = Repo()
-        LOGGER(__name__).info(f"Git Client Found [VPS DEPLOYER]")
-    except GitCommandError:
-        LOGGER(__name__).info(f"Invalid Git Command")
-    except InvalidGitRepositoryError:
-        repo = Repo.init()
-        if "origin" in repo.remotes:
-            origin = repo.remote("origin")
-        else:
-            origin = repo.create_remote("origin", UPSTREAM_REPO)
+        repo = Repo(".")
+
+        # Ensure origin exists
+        if "origin" not in repo.remotes:
+            log.warning("No origin remote found. Skipping git update.")
+            return
+
+        origin = repo.remotes.origin
         origin.fetch()
-        repo.create_head(
-            config.UPSTREAM_BRANCH,
-            origin.refs[config.UPSTREAM_BRANCH],
-        )
-        repo.heads[config.UPSTREAM_BRANCH].set_tracking_branch(
-            origin.refs[config.UPSTREAM_BRANCH]
-        )
-        repo.heads[config.UPSTREAM_BRANCH].checkout(True)
-        try:
-            repo.create_remote("origin", config.UPSTREAM_REPO)
-        except BaseException:
-            pass
-        nrs = repo.remote("origin")
-        nrs.fetch(config.UPSTREAM_BRANCH)
-        try:
-            nrs.pull(config.UPSTREAM_BRANCH)
-        except GitCommandError:
-            repo.git.reset("--hard", "FETCH_HEAD")
-        install_req("pip3 install --no-cache-dir -r requirements.txt")
-        LOGGER(__name__).info(f"Fetching updates from upstream repository...")
 
+        branch = getattr(config, "UPSTREAM_BRANCH", "main")
 
-# ©️ Copyright Reserved - @NoxxOP  Nand Yaduwanshi
+        # Ensure branch exists
+        if f"origin/{branch}" not in origin.refs:
+            log.warning(f"Upstream branch origin/{branch} not found. Skipping git update.")
+            return
 
-# ===========================================
-# ©️ 2025 Nand Yaduwanshi (aka @NoxxOP)
-# 🔗 GitHub : https://github.com/NoxxOP/ShrutiMusic
-# 📢 Telegram Channel : https://t.me/ShrutiBots
-# ===========================================
+        repo.git.reset("--hard", f"origin/{branch}")
+        log.info(f"Git repo updated successfully from origin/{branch}")
 
+    except InvalidGitRepositoryError:
+        log.warning("Invalid git repository. Skipping git update.")
+        return
 
-# ❤️ Love From ShrutiBots 
+    except GitCommandError as e:
+        log.warning(f"Git command error: {e}")
+        return
+
+    except Exception as e:
+        log.warning(f"Unexpected git error: {e}")
+        return
+        
