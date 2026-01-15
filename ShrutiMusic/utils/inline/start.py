@@ -36,3 +36,18 @@ def private_panel(_):
     
     ]
     return buttons
+
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+def about_panel():
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    text="Close",
+                    callback_data="close"
+                )
+            ]
+        ]
+    )
+    
