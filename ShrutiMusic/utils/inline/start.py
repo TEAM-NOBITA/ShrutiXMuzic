@@ -2,7 +2,7 @@ from pyrogram.types import InlineKeyboardButton
 import config
 from ShrutiMusic import app
 
-def start_panel(_):
+def about_panel():
     buttons = [
         [
             InlineKeyboardButton(
@@ -14,7 +14,7 @@ def start_panel(_):
     return buttons
 
 
-def private_panel(_):
+def about_panel():
     buttons = [
         [
             InlineKeyboardButton(text=_["S_B_4"], callback_data="settings_back_helper"),
