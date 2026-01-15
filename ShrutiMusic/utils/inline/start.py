@@ -51,3 +51,21 @@ def about_panel():
         ]
     )
     
+def owner_panel():
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    text="Owner",
+                    user_id=config.OWNER_ID
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="Close",
+                    callback_data="close"
+                )
+            ]
+        ]
+    )
+    
