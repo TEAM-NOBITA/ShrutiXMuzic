@@ -21,8 +21,11 @@ UPSTREAM_REPO = os.getenv("UPSTREAM_REPO", "https://github.com/TEAM-NOBITA/Shrut
 UPSTREAM_BRANCH = os.getenv("UPSTREAM_BRANCH", "main")
 GIT_TOKEN = os.getenv("GIT_TOKEN", None)
 
-SUPPORT_CHANNEL = os.getenv("SUPPORT_CHANNEL", "https://t.me/systemlk")
-SUPPORT_CHAT = "https://t.me/muzicbot19"
+# ===== SUPPORT / CONTACT SETTINGS =====
+
+SUPPORT_GROUP = "https://t.me/muzicbot19"    
+SUPPORT_CHANNEL = "https://t.me/systemlk"
+
 
 DURATION_LIMIT_MIN = int(os.getenv("DURATION_LIMIT", 300))
 PLAYLIST_FETCH_LIMIT = int(os.getenv("PLAYLIST_FETCH_LIMIT", 25))
