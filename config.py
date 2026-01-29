@@ -22,9 +22,9 @@ UPSTREAM_BRANCH = os.getenv("UPSTREAM_BRANCH", "main")
 GIT_TOKEN = os.getenv("GIT_TOKEN", None)
 
 # ===== SUPPORT SETTINGS =====
-SUPPORT_CHAT = "https://t.me/muzicbot19"
+SUPPORT_CHAT = "https://t.me/SYSTEM_NETWORK"
 SUPPORT_GROUP = SUPPORT_CHAT
-SUPPORT_CHANNEL = "https://t.me/systemlk"
+SUPPORT_CHANNEL = "https://t.me/SYSTEM_NETWORK_0"
 
 
 
